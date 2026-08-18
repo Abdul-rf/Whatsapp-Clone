@@ -4,26 +4,39 @@ import com.whatsapp.dto.UserResponse;
 import com.whatsapp.entity.User;
 import com.whatsapp.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
+import com.whatsapp.exception.UserNotFoundException;
 import java.util.List;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
+
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserResponse registerUser(UserRequest request){
+        if (userRepository.existsByEmail(request.getEmail())) {
 
+            throw new RuntimeException(
+                    "Email already registered"
+            );
+        }
         User user = new User();
 
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setPassword(request.getPassword());
+        user.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
 
         User savedUser = userRepository.save(user);
 
@@ -46,7 +59,7 @@ public class UserService {
 
         return userRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("User not found"));
+                        new UserNotFoundException("User not found with id: " + id));
     }
 
     public void deleteUser(Long id) {

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.whatsapp.dto.UserRequest;
 import com.whatsapp.dto.UserResponse;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
@@ -19,7 +20,7 @@ public class UserController {
 
     // POST /users
     @PostMapping
-    public UserResponse createUser(@RequestBody UserRequest request) {
+    public UserResponse createUser(@Valid @RequestBody UserRequest request) {
 
         return userService.registerUser(request);
     }
